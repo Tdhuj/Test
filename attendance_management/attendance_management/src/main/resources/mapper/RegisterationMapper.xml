@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hngy.attendance.mapper.RegistrationMapper">
+    <insert id="add">
+        insert into t_registration(`user_id`, `group_id`, `status`)
+        values ((select `id` from `t_user` where `name` = #{name}),
+                (select `group_id` from `t_user` where `name` = #{name}),
+                #{status})
+    </insert>
+    <update id="edit">
+        update `t_registration`
+        set `user_id`=(select `id` from `t_user` where `name` = #{name}),
+            `status`=#{status}
+        where `id` = #{id}
+    </update>
+    <select id="semesterTotal" resultType="com.hngy.attendance.entity.dto.RegistrationTotalDTO">
+        select group_id,
+               name,
+               MAX(case when status = 0 then count else null End) as leave_count,
+               MAX(case when status = 1 then count else null End) as late_count,
+               MAX(case when status = 2 then count else null End) as truancy_count
+        from (select group_id, name, status, count(*) count
+              from view_registration_username
+              where group_id = #{groupId}
+                and create_time between #{start_time} and #{stop_time}
+              group by status, group_id, name) as grouped_results
+        group by group_id, name
+    </select>
+    <select id="certainTotal" resultType="com.hngy.attendance.entity.dto.RegistrationTotalDTO">
+        select group_id,
+               name,
+               MAX(case when status = 0 then count else null End) as leave_count,
+               MAX(case when status = 1 then count else null End) as late_count,
+               MAX(case when status = 2 then count else null End) as truancy_count
+        from (select group_id, name, status, count(*) count
+              from view_registration_username
+              where group_id = #{groupId}
+                and name = #{name}
+                and create_time between #{start_time} and #{stop_time}
+              group by status, group_id, name) as grouped_results
+        group by group_id, name
+    </select>
+    <select id="statistics" resultType="com.hngy.attendance.entity.dto.RegistrationTotalDTO">
+        select group_id,
+               name,
+               MAX(case when status = 0 then count else null End) as leave_count,
+               MAX(case when status = 1 then count else null End) as late_count,
+               MAX(case when status = 2 then count else null End) as truancy_count
+        from (select group_id, name, status, count(*) count
+              from view_registration_username
+              where group_id = #{groupId}
+              group by status, group_id, name) as grouped_results
+        group by group_id, name
+    </select>
+    <select id="name" resultType="com.hngy.attendance.entity.dto.RegistrationTotalDTO">
+        select group_id,
+               name,
+               MAX(case when status = 0 then count else null End) as leave_count,
+               MAX(case when status = 1 then count else null End) as late_count,
+               MAX(case when status = 2 then count else null End) as truancy_count
+        from (select group_id, name, status, count(*) count
+              from view_registration_username
+              where group_id = #{groupId}
+                and name = #{name}
+              group by status, group_id) as grouped_results
+        group by group_id
+    </select>
+    <select id="late" resultType="java.lang.Integer">
+        select count(distinct user_id) as lateCount
+        from (
+                 select distinct user_id
+                 from t_registration
+                 where date (create_time) = current_date()
+                   and status = 1) as distinct_records;
+    </select>
+    <select id="truancy" resultType="java.lang.Integer">
+        select count(distinct user_id) as lateCount
+        from (
+                 select distinct user_id
+                 from t_registration
+                 where date (create_time) = current_date()
+                   and status = 2) as distinct_records;
+    </select>
+
+</mapper>

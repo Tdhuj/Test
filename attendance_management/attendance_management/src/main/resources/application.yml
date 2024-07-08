@@ -1,0 +1,29 @@
+server:
+  port: 8088
+  servlet:
+    context-path: /
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher #解决引入swagger报错问题
+  datasource:
+    username: root  #数据库用户名
+    password: 123456  #是是数据库密码
+    url: jdbc:mysql://localhost:3306/attend_mgt?useUnicode=true&characterEncoding=UTF-8  #数据库连接地址
+    driver-class-name: com.mysql.cj.jdbc.Driver #数据库驱动
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印SQL
+
+attend:
+  jwt:
+    secret: f4e2e52034348f86b67cde581c0f9eb5    #加密密钥
+    expire: 604800    #token有效时长
+    header: Authorization
+
+shiro-redis:
+  enable: true
+  redis-manager:
+    host: 127.0.0.1:6379
